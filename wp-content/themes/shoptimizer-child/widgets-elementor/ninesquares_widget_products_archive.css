@@ -1,0 +1,471 @@
+.ninesquares_widget_wrap_section{
+	position: relative; /* щоб бекдроп позиціонувався по цьому контейнеру */
+}
+.wrap_fillter_ninesquares_widget_products_archive{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 21px;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort{    
+	flex: 1 1 0; /* flex-grow:1, flex-shrink:1, flex-basis:0 */
+	min-width: 250px; /* щоб не сильно стискались на маленьких екранах */
+	max-width: 310px;
+	box-sizing: border-box;
+	cursor: pointer;
+	position: relative;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .arrow,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .arrow{    
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .arrow::before,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .arrow::before{    
+	content: url("data:image/svg+xml;charset=utf8,%3Csvg width='12' height='12' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9L12 16L5 9' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	color: var(--color-gray-300);
+	font-size: 12px;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter ul, .wrap_fillter_ninesquares_widget_products_archive .item_fillter li,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort ul, .wrap_fillter_ninesquares_widget_products_archive .item_sort li{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_response,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_response{
+
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+
+	background-color: #fff;
+	box-shadow: 0 1px 15px rgba(0, 0, 0, 0.08);
+	padding: 10px 35px 10px 15px;
+	position: relative;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_response span,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_response span{
+	text-transform: uppercase;
+	font-size: 12px;
+	color: #333;
+	font-weight: 600;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_response ul,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_response ul{
+	display: flex;
+	flex-wrap: nowrap;
+	max-width: 65%;
+	overflow: hidden;
+
+	position: absolute;
+	top: 10px;
+	right: 35px;
+}
+
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_response ul li{
+	margin-left: 5px;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 4px 8px;
+	color: #333;
+	background: #f7f7f7;
+	line-height: 12px;
+
+	cursor: pointer;
+
+	flex-grow: 0;
+	flex-shrink: 0;
+	flex-basis: auto;
+
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_response ul li{
+	margin-left: 5px;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 4px 8px;
+	color: #333;
+	background: #f7f7f7;
+	line-height: 12px;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_response ul li::before{
+	margin-right: 4px;
+	font-size: 15px;
+	font-weight: 400;
+	/*transition:all .5s ease;*/
+	content: "×";
+	display: inline-block;
+	width: 0;
+	opacity: 0;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_response ul li:hover::before{
+	width: auto;
+	opacity: 1;
+}
+
+
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_request{
+	position: absolute;
+
+	visibility: hidden;
+	opacity: 0;
+
+	transform: none !important;
+	pointer-events: visible;
+	pointer-events: unset;
+	left: 0;
+	z-index: 380;
+
+	inset-inline: 0;
+	min-width: 200px;
+
+	background-color: #fff;
+	box-shadow: 0 1px 15px rgba(0, 0, 0, 0.08);
+
+	max-height: var(--wd-scroll-h, 50vh);
+	overflow: hidden;
+	overflow-y: auto;
+	/* Firefox */
+	scrollbar-width: thin;  
+	scrollbar-color: rgba(0,0,0,0.3) transparent;
+
+}
+
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request.show,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_request.show{
+	visibility: visible;
+	opacity: 1;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request li,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_request li{
+	margin: 0;
+	padding: 8px 18px;
+	color: var(--color-gray-500);
+	font-size: 12px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request li:hover,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_request li:hover{
+	color: #dc9814;
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request li.active,
+.wrap_fillter_ninesquares_widget_products_archive .item_sort .item_sort_request li.active{
+	color: #dc9814
+}
+
+.ninesquares_widget_products_archive_loadmore{
+	margin-top: 10px;
+	display: flex;
+	justify-content: center;
+}
+
+
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter_request .dd_color{
+	position: relative;
+	width: 20px;
+	height: 20px;
+	margin-right: 10px;
+	border: 1px solid rgba(0,0,0,0.2);
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request li:hover .dd_color{
+	border: 1px solid rgba(0,0,0,0.8);
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter .item_fillter_request li.active .dd_color{
+	border: 1px solid rgba(0,0,0,0.8);
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter_request .d_color{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 13px;
+	height: 13px;
+}
+
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter_request .d_text{
+	padding: 2px 5px;
+	border: 1px solid rgba(0,0,0,0.2);
+	min-width: 1em;
+	min-height: 1em;
+	width: auto;
+	height: auto;
+	color: #242424;
+	font-weight: 600;
+	font-size: var(--wd-swatch-size);
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter_request li:hover .d_text{
+	border: 1px solid rgba(0,0,0,0.8);
+}
+.wrap_fillter_ninesquares_widget_products_archive .item_fillter_request li.active .d_text{
+	border: 1px solid rgba(0,0,0,0.8);
+}
+
+/*кнопка відкриття*/
+#ns_btn_open_fill{
+	display: none;
+}
+/*кнопка закриття*/
+.ns_blok_moby{
+	display: none;
+}
+/*блок швидкого очищення товарівя*/
+.ns_wrap_kill{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 10px 0;
+}
+.ns_wrap_kill button{
+	all: unset;                /* скидує браузерні стилі */
+
+	display: inline-flex; 
+	align-items: center;
+	justify-content: center;
+
+	position: relative;
+	font-size: 13px;
+	color: #333;
+	background: #fff;
+	font-weight: 600;
+	line-height: 13px;
+	text-transform: capitalize;
+
+	margin-right: 5px;
+	padding-right: 15px;
+	border-right: 1px solid #767676;
+	
+	box-sizing: border-box;
+}
+.ns_wrap_kill button::before {
+	content: "+";
+	display: inline-block;
+	transform: rotate(45deg);
+	margin-left: 10px;
+	font-size: 19px;
+	color: #333;
+	font-weight: 100;
+	margin-right: 5px;
+}
+.ns_wrap_kill button:hover{
+	color: #767676;
+	background: #fff;
+}
+.ns_wrap_kill button:hover::before{
+	color: #767676;
+	background: #fff;
+}
+.ns_wrap_kill ul{
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+}
+.ns_wrap_kill ul li{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	margin-right: 5px;
+
+	position: relative;
+	font-size: 13px;
+	color: #333;
+	background: #fff;
+	font-weight: 600;
+	line-height: 13px;
+	text-transform: capitalize;
+	cursor: pointer;
+}
+.ns_wrap_kill ul li::before {
+	content: "+";
+	display: inline-block;
+	transform: rotate(45deg);
+	margin-left: 10px;
+	font-size: 19px;
+	color: #333;
+	font-weight: 100;
+	margin-right: 5px;
+	cursor: pointer;
+}
+.ns_wrap_kill ul li:hover{
+	color: #767676;
+	background: #fff;
+}
+.ns_wrap_kill ul li:hover::before{
+	color: #767676;
+	background: #fff;
+}
+
+/* мобільні стилі */
+@media (max-width: 768px) {
+  
+	.wrap_fillter_ninesquares_widget_products_archive.offcanvas {
+
+		display: block;
+
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 300px;
+		height: 100vh;
+		background: #fff;
+		box-shadow: 4px 0 12px rgba(0,0,0,0.2);
+		transform: translateX(-100%); /* ховаємо */
+		transition: transform 0.3s ease-in-out;
+		z-index: 401; /* вище за бекдроп */
+		padding: 0 10px 40px 10px;
+	}
+	.wrap_fillter_ninesquares_widget_products_archive.offcanvas > div {
+		margin-bottom: 20px;
+	}
+	.wrap_fillter_ninesquares_widget_products_archive.offcanvas.show {
+		transform: translateX(0); /* показуємо */
+	}
+	/* бекдроп */
+	.offcanvas-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0,0,0,0.5);
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity 0.3s ease;
+		z-index: 400;
+	}
+	.offcanvas-backdrop.show {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	/* кнопка закриття та мобільний блок */
+	.ns_blok_moby{
+		display: block;
+	}
+	.ns_blok_moby #ns_btn_close_fill{
+		position: relative;
+		display: block;
+		padding: 20px 15px;
+		width: 100%;
+		background: #fff;
+		border-bottom: 1px solid rgb(214,214,214);
+		margin-bottom: 20px;
+		text-align: end;
+
+		font-weight: 600;
+		line-height: 1;
+		text-transform: none;
+		font-size: 15px;
+	}
+	.ns_blok_moby #ns_btn_close_fill::before {
+		content: "+";
+		display: inline-block;
+		transform: rotate(45deg);
+		margin-left: 10px;
+		font-size: 19px;
+		color: #333;
+		font-weight: 100;
+		margin-right: 5px;
+	}
+
+	/*кнопка відкриття*/
+	#ns_btn_open_fill {
+		display: flex;
+		justify-content: flex-start;
+		align-items: center;
+		gap: 5px;
+		position: relative; /* початкове положення */
+		transition: all 0.5s ease; /* плавний перехід */
+		top: 0;
+		left: 0;
+		opacity: 1;
+		z-index: 10;
+
+		text-transform: capitalize;
+		font-size: 16px;
+		background: #fff;
+		padding: 5px 15px;
+
+		background-color: #fff;
+		box-shadow: 0 1px 15px rgba(0, 0, 0, 0.08);
+	}
+	
+	#ns_btn_open_fill .ns_btn_fill_img {
+		display: inline-block;
+		height: 20px;
+		width: 20px;
+	}
+
+	/* коли прилипла */
+	#ns_btn_open_fill.sticky {
+		position: fixed;
+		top: 130px;      /* відступ від верху екрану */
+		left: 0;     /* з’являється зліва */
+		opacity: 1;
+		transform: translateY(20px); /* трохи нижче, можна анімувати */
+		min-height: auto !important;
+		padding: 15px;
+		
+		background-color: #fff;
+		box-shadow: 0 1px 15px rgba(0, 0, 0, 0.08);
+	}
+	#ns_btn_open_fill.sticky .ns_btn_fill_text {
+		display: none;
+	}
+
+}
+
+/* Для контейнера товарів */
+
+.ninesquares_widget_products_archive_wrap .products {
+	display: flex!important;
+	flex-wrap: wrap!important;
+
+	align-items: stretch!important;
+	width: calc(100% + 30px)!important;
+	margin-left: -15px!important;
+	margin-bottom: 0!important;
+
+	column-gap: normal!important; 
+	row-gap: normal!important;
+}
+.ninesquares_widget_products_archive_wrap .products .product {
+  flex: 0 0 25%; /* 4 в ряд */
+  max-width: 25%;
+  box-sizing: border-box;
+  padding: 0 15px; /* якщо потрібні відступи між товарами */
+  margin-bottom: 30px; /* нижній відступ */
+}
+
+@media (max-width: 768px) {
+	.ninesquares_widget_products_archive_wrap .products .product {
+		flex: 0 0 33.333%!important;; /* 3 в ряд */
+		max-width: 33.333%!important;;
+	}
+}
+
+@media (max-width: 500px) {
+	.ninesquares_widget_products_archive_wrap .products .product {
+		flex: 0 0 50%!important;; /* 2 в ряд */
+		max-width: 50%!important;;
+	}
+}
+
+@media (max-width: 350px) {
+	.ninesquares_widget_products_archive_wrap .products .product {
+		flex: 0 0 100%!important;; /* 1 в ряд на дуже маленьких екранах */
+		max-width: 100%!important;;
+	}
+}
