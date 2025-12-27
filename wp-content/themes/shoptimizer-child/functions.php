@@ -64,110 +64,22 @@ function shoptimizer_enqueue_styles() {
 	add_action('wp_ajax_ninesquares_widget_products_archive', 'ninesquares_widget_products_archive_func');
 	add_action('wp_ajax_nopriv_ninesquares_widget_products_archive', 'ninesquares_widget_products_archive_func');
 	function ninesquares_widget_products_archive_func() {
-		global $wpdb;
 
 		// Перевірка nonce
 		if (!wp_verify_nonce($_POST['nonce'], 'ninesquares_widget_products_archive')) {
 			wp_die();
 		}
 
-		$posts_per_page = intval($_POST['posts_per_page']);
-		$paged = !empty($_POST['page']) ? intval($_POST['page']) : 1;
-		$sort = isset( $_POST['sort'] ) ? (string) $_POST['sort'] : 'menu_order';
-
-        // Базовий запит
-        $query_arr = [
-            'post_type'      => 'product',
-            'post_status'    => 'publish',
-            'posts_per_page' => $posts_per_page,
-            'paged'          => $paged,
-            'orderby'        => 'menu_order',
-            'order'          => 'ASC',
-            'fields'         => 'all',
-            'ninesquares_sort' => $sort,
-        ];
-
-        if ( $sort === 'date' ) {
-            $query_arr['orderby'] = 'date';
-            $query_arr['order']   = 'DESC';
-        }
-
-		// Таксономії
-		$terms = $_POST['term'] ?? [];
-		if (!empty($terms)) {
-			// підготовчий масив для того щоб терми однієї таксономії потрапили в одну умову
-			$arr_new_terms = [];
-			foreach ($terms as $term) {
-				$arr = explode("||", $term);
-				$arr_new_terms[$arr[0]][] = $arr[1];
-			}
-			// формую умову
-			$tax_query = [];
-			foreach ($arr_new_terms as $key => $value) {
-				$tax_query[] = [
-					'taxonomy' => $key,
-					'field' => 'id',
-					'terms' => $value,
-					'include_children' => false, // не чіпати дочірні категорії
-					'operator' => 'AND'
-				];
-			}
-			if (!empty($tax_query) && count($tax_query) > 1) {
-                $tax_query = [
-                        'relation' => 'AND',
-                    ] + $tax_query;
-            }
-    
-            $query_arr['tax_query'] = $tax_query;
-		}
-		
-		if ( !empty($_POST['s']) ) {
-            $search_term = trim( sanitize_text_field($_POST['s']) );
-            $search_term = mb_substr($search_term, 0, 100);
-            $query_arr['s'] = $search_term;
-            $query_arr['search_columns'] = ['post_title'];
-        }
-
-		// Фільтр для сортування через lookup table
-        add_filter('posts_clauses', function($clauses, $query) use ($wpdb) {
-            $sort = $query->get('ninesquares_sort');
-
-            if (in_array($sort, ['min_price', 'max_price', 'min_sale_price', 'max_sale_price'])) {
-                // JOIN lookup table
-                if (false === strpos($clauses['join'], "wc_product_meta_lookup")) {
-                    $clauses['join'] .= " LEFT JOIN {$wpdb->prefix}wc_product_meta_lookup wcpl ON {$wpdb->posts}.ID = wcpl.product_id ";
-                }
-
-                // Сортування по різним полям
-                switch ($sort) {
-                    case 'min_price':
-                        $clauses['orderby'] = " wcpl.min_price IS NULL, wcpl.min_price ASC ";
-                        break;
-
-                    case 'max_price':
-                        $clauses['orderby'] = " wcpl.max_price IS NULL, wcpl.max_price DESC ";
-                        break;
-
-                    case 'min_sale_price':
-                        $clauses['orderby'] = " wcpl.total_sales IS NULL, wcpl.total_sales ASC ";
-                        break;
-
-                    case 'max_sale_price':
-                        $clauses['orderby'] = " wcpl.total_sales IS NULL, wcpl.total_sales DESC ";
-                        break;
-                }
-
-                // DISTINCT для уникнення дублікатів
-                if (false === strpos($clauses['distinct'], 'DISTINCT')) {
-                    $clauses['distinct'] = 'DISTINCT';
-                }
-            }
-
-            return $clauses;
-        }, 10, 2);
+        $query_args = ninesquares_get_widget_query_args([
+            'posts_per_page' => $_POST['posts_per_page'],
+            'paged'          => $_POST['page'],
+            'sort'           => isset( $_POST['sort'] ) ? (string) $_POST['sort'] : 'menu_order',
+            'terms'          => $_POST['term'] ?? [],
+            's'              => $_POST['s'] ?? ''
+        ]);
 
 		// Виконання запиту
-		$query = new WP_Query($query_arr);
+		$query = new WP_Query($query_args);
 
 		ob_start();
 
@@ -193,7 +105,7 @@ function shoptimizer_enqueue_styles() {
 			'max_page' => $query->max_num_pages,
 			'res' => $query->request,
 			'res2' => $query->posts,
-			'res3' => $query_arr,
+			'res3' => $query_args,
 			'res4' => $query,
 			'res5' => $_POST,
 		]);
@@ -306,3 +218,128 @@ function uniq_remove_billing_company_field( $fields ) {
     }
     return $fields;
 }
+
+/**
+ * Global filter to handle custom sorting (price, sales) for the widget query.
+ * Triggers only when 'ninesquares_sort' query var is present.
+ */
+function ns_widget_posts_clauses( $clauses, $query ) {
+    global $wpdb;
+
+    $sort = $query->get( 'ninesquares_sort' );
+
+    if ( in_array( $sort, ['min_price', 'max_price', 'min_sale_price', 'max_sale_price'] ) ) {
+        // JOIN lookup table
+        if ( false === strpos( $clauses['join'], "wc_product_meta_lookup" ) ) {
+            $clauses['join'] .= " LEFT JOIN {$wpdb->prefix}wc_product_meta_lookup wcpl ON {$wpdb->posts}.ID = wcpl.product_id ";
+        }
+
+        // Sorting Logic
+        switch ( $sort ) {
+            case 'min_price':
+                $clauses['orderby'] = " wcpl.min_price IS NULL, wcpl.min_price ASC ";
+                break;
+            case 'max_price':
+                $clauses['orderby'] = " wcpl.max_price IS NULL, wcpl.max_price DESC ";
+                break;
+            case 'min_sale_price':
+                $clauses['orderby'] = " wcpl.total_sales IS NULL, wcpl.total_sales ASC ";
+                break;
+            case 'max_sale_price':
+                $clauses['orderby'] = " wcpl.total_sales IS NULL, wcpl.total_sales DESC ";
+                break;
+        }
+
+        // DISTINCT to prevent duplicates
+        if ( false === strpos( $clauses['distinct'], 'DISTINCT' ) ) {
+            $clauses['distinct'] = 'DISTINCT';
+        }
+    }
+
+    return $clauses;
+}
+add_filter( 'posts_clauses', 'ns_widget_posts_clauses', 10, 2 );
+
+/**
+ * Shared function to generate WP_Query arguments for the widget and AJAX.
+ *
+ * @param array $params Input parameters (sort, terms, pagination, etc.)
+ * @return array WP_Query arguments
+ */
+function ninesquares_get_widget_query_args( $params ) {
+    $defaults = [
+        'posts_per_page' => 4,
+        'paged'          => 1,
+        'sort'           => 'menu_order',
+        'terms'          => [], // Expects array of strings: "taxonomy||term_id"
+        's'              => '',
+    ];
+
+    $params = wp_parse_args( $params, $defaults );
+
+    // Normalize inputs
+    $posts_per_page = intval( $params['posts_per_page'] );
+    $paged          = intval( $params['paged'] ) ? intval( $params['paged'] ) : 1;
+    $sort           = sanitize_text_field( $params['sort'] );
+
+    $query_arr = [
+        'post_type'              => 'product',
+        'post_status'            => 'publish',
+        'posts_per_page'         => $posts_per_page,
+        'paged'                  => $paged,
+        'orderby'                => 'menu_order',
+        'order'                  => 'ASC',
+        'fields'                 => 'all',
+        'ninesquares_sort'       => $sort, // Custom query var to trigger our filter
+        'update_post_meta_cache' => true,
+        'update_post_term_cache' => true,
+    ];
+
+    // Basic Sorting
+    if ( $sort === 'date' ) {
+        $query_arr['orderby'] = 'date';
+        $query_arr['order']   = 'DESC';
+    }
+
+    // Taxonomies Processing
+    if ( ! empty( $params['terms'] ) ) {
+        $arr_new_terms = [];
+        foreach ( $params['terms'] as $term_str ) {
+            $parts = explode( '||', $term_str );
+            if ( count( $parts ) === 2 ) {
+                $arr_new_terms[ $parts[0] ][] = $parts[1];
+            }
+        }
+
+        $tax_query = [];
+        foreach ( $arr_new_terms as $tax => $ids ) {
+            $tax_query[] = [
+                'taxonomy'         => $tax,
+                'field'            => 'term_id',
+                'terms'            => $ids,
+                'include_children' => false,
+                'operator'         => 'AND'
+            ];
+        }
+
+        if ( ! empty( $tax_query ) ) {
+            if ( count( $tax_query ) > 1 ) {
+                $query_arr['tax_query'] = array_merge( [ 'relation' => 'AND' ], $tax_query );
+            } else {
+                $query_arr['tax_query'] = $tax_query;
+            }
+        }
+    }
+
+    // Search Processing
+    if ( ! empty( $params['s'] ) ) {
+        $search_term = trim( sanitize_text_field( $params['s'] ) );
+        $search_term = mb_substr( $search_term, 0, 100 );
+        $query_arr['s'] = $search_term;
+        $query_arr['search_columns'] = ['post_title'];
+    }
+
+    return $query_arr;
+}
+
+

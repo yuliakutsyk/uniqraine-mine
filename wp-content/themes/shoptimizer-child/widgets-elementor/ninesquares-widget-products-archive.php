@@ -115,64 +115,50 @@ class Ninesquares_Widget_Products_Archive extends Widget_Base {
 
         // налаштування віджета 
         $settings = $this->get_settings_for_display();
-
         global $post;
+
         $is_novynky = isset( $post->post_name ) && $post->post_name == 'novynky';
-        $orderby = $is_novynky ? 'date' : 'menu_order';
-        $order = $is_novynky ? 'DESC' : 'ASC';
+        $sort = $is_novynky ? 'date' : 'menu_order';
 
         // Стартовий обєкт при першій загрузці
-        $args = [
-            'post_type'      => 'product',
-            'post_status'    => 'publish',
-            'posts_per_page' => isset( $settings['products_count'] ) ? (int) $settings['products_count'] : 4,
-            'orderby'        => $orderby,
-            'order'          => $order,
-            'update_post_meta_cache' => true,
-            'update_post_term_cache' => true,
-        ];
+        // Determine Start Terms
+        $terms_param = [];
+        $term_start  = null;
+        $term_start_arr = []; // For JS data-checked
 
-        // 
-        if ( !empty($_GET['s']) ) {
-            $search_term = trim( sanitize_text_field($_GET['s']) );
-            $search_term = mb_substr($search_term, 0, 100);
-            $args['s'] = $search_term;
-            $args['search_columns'] = ['post_title'];
-        }
-
-        $term_start = null;
-        // просто товари але якщо сторінка таксономії то додаю таксономію цієї сторінки
         if ( is_product_taxonomy() ) {
-            // Поточна категорія або підкатегорія
+            // Current category/taxonomy page
             $term_start = get_queried_object();
-            $args['tax_query'] = [
-                    [
-                            'taxonomy' => $term_start->taxonomy,
-                            'field'    => 'term_id',
-                            'terms'    => $term_start->term_id
-                    ],
-            ];
-            $term_start_arr = array($term_start->term_id);// для js і атрібута data-checked при першій загрузці
-        }elseif( !empty($settings['term_start']) ){ // якщо в налаштуваннях обрано стартовий терм
-            $tax_query_arr = array();
-            $term_start_arr = array();// для js і атрібута data-checked при першій загрузці
-            foreach( $settings['term_start'] as $value ){
-                $new_arr = explode("||", $value); // product_cat||457
-                if ( !$term_start ) { // зберігаємо ПЕРШИЙ як "term_start"
-                    $term_start = get_term( (int) $new_arr[1], $new_arr[0] );
-                }
-                $tax_query_arr[] = array(
-                        'taxonomy' => $new_arr[0],
-                        'field'    => 'term_id',
-                        'terms'    => $new_arr[1]
-                );
-                $term_start_arr[] = $new_arr[1];// для js і атрібута data-checked при першій загрузці
+            if ( $term_start ) {
+                $terms_param[] = $term_start->taxonomy . '||' . $term_start->term_id;
+                $term_start_arr[] = $term_start->term_id;
             }
-            $args['tax_query'] = $tax_query_arr;
+        } elseif ( ! empty( $settings['term_start'] ) ) {
+            // Widget settings
+            $terms_param = $settings['term_start'];
 
+            // Extract the first term object for the filter logic below
+            if ( ! empty( $terms_param[0] ) ) {
+                $parts = explode( '||', $terms_param[0] );
+                $term_start = get_term( (int) $parts[1], $parts[0] );
+            }
+
+            // Prepare ID array for JS
+            foreach($terms_param as $t) {
+                $p = explode('||', $t);
+                if(isset($p[1])) $term_start_arr[] = $p[1];
+            }
         }
 
-        // запит
+        // Build Query using shared function
+        $args = ninesquares_get_widget_query_args([
+                'posts_per_page' => isset( $settings['products_count'] ) ? (int) $settings['products_count'] : 4,
+                'sort'           => $sort,
+                'terms'          => $terms_param,
+                's'              => !empty($_GET['s']) ? $_GET['s'] : ''
+        ]);
+
+        // Execute Query
         $result = new WP_Query( $args );
 
         // echo '<pre>' . print_r($result, true) . '</pre>';
