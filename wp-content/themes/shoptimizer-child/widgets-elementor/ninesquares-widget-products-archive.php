@@ -196,6 +196,10 @@ class Ninesquares_Widget_Products_Archive extends Widget_Base
         if (count($tax_query) > 1) {
             $args['tax_query'] = $tax_query;
         }
+//        echo '<pre>';
+//        print_r($args);
+//        print_r($term_start_arr);
+//        echo '</pre>';
 
         // Виконуємо запит
         $result = new WP_Query($args);
@@ -203,6 +207,11 @@ class Ninesquares_Widget_Products_Archive extends Widget_Base
         $cats = define_categories_list_for_filter($selected_categories);
         $attrs = define_attrs_lists_for_filter($selected_categories);
         $taxonomies = array_merge($cats, $attrs);
+        echo '<pre>';
+//        print_r($taxonomies);
+//        print_r($args);
+//        print_r($term_start_arr);
+        echo '</pre>';
 
         ?>
 
@@ -246,25 +255,45 @@ class Ninesquares_Widget_Products_Archive extends Widget_Base
                             <ul class=""></ul>
                             <div class="arrow"></div>
                         </div>
-                        <?php if (!empty($taxon)): ?>
+                        <?php if (!empty($taxon)):
+//                            echo '<pre>';
+//                             print_r($taxon);
+//                            echo '</pre>';
+                            ?>
                             <ul class="item_fillter_request">
-                                <?php foreach ($taxon as $term): ?>
+                                <?php foreach ($taxon as $term):
+//                                    echo '<pre>';
+//                                    var_dump($term);
+//                                    echo '</pre>';
+                                    ?>
                                     <?php
+                                    // Конвертуємо ID в об'єкт якщо потрібно
+                                    if (is_int($term)) {
+                                        $term = get_term($term);
+                                    }
+
+                                    // Пропускаємо якщо термін невалідний
+                                    if (!$term || is_wp_error($term) || !is_object($term)) {
+                                        continue;
+                                    }
+
                                     $color = false;
                                     if ($term->taxonomy === 'pa_kolir') {
                                         $color = get_term_meta($term->term_id, 'color', true);
                                     }
+
                                     $border = '';
                                     if ($term->taxonomy != 'pa_kolir' && $term->taxonomy != 'product_cat') {
                                         $border = 'd_text';
                                     }
+
                                     $is_active = !empty($term_start_arr) && in_array($term->term_id, $term_start_arr);
                                     ?>
-                                    <li data-value="<?php echo $term->taxonomy . '||' . $term->term_id; ?>"
+                                    <li data-value="<?php echo esc_attr($term->taxonomy . '||' . $term->term_id); ?>"
                                         data-checked="<?php echo $is_active ? 'ok' : 'no'; ?>"
                                         class="<?php echo $is_active ? 'active' : ''; ?>">
-                                        <?php echo(!empty($color) ? '<div class="dd_color"><div class="d_color" style="background: ' . $color . ';"></div></div>' : ''); ?>
-                                        <span class="<?php echo $border; ?>"><?php echo $term->name ?></span>
+                                        <?php echo(!empty($color) ? '<div class="dd_color"><div class="d_color" style="background: ' . esc_attr($color) . ';"></div></div>' : ''); ?>
+                                        <span class="<?php echo $border; ?>"><?php echo esc_html($term->name); ?></span>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>
@@ -272,6 +301,7 @@ class Ninesquares_Widget_Products_Archive extends Widget_Base
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
+
 
             <!--Блок для сортування-->
             <div class="item_sort">

@@ -437,17 +437,18 @@ function define_categories_list_for_filter($categories_array_ids) {
 
     if(!empty($categories_array_ids)) {
         foreach ($categories_array_ids as $cat_id) {
+            $cat_obj = get_term($cat_id, 'product_cat');
+
 //            echo '<pre>';
 //            var_dump($cat_id);
 //            echo '</pre>';
             if ($children = get_terms(['taxonomy' => 'product_cat', 'parent' => $cat_id, 'hide_empty' => true])) {
                 $categories = array_merge($categories, $children);
+                $categories = array_merge($categories, (array)$cat_obj);
                 $has_any_child = true;
             }
 
             if (!$has_any_child) {
-                $cat_obj = get_term($cat_id, 'product_cat');
-
                 if ($siblings = get_terms(['taxonomy' => 'product_cat', 'parent' => $cat_obj->parent, 'hide_empty' => true])) {
                     $categories = array_merge($categories, $siblings);
                 }
